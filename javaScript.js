@@ -137,20 +137,25 @@ if (selectGlaze) selectGlaze.addEventListener('click', logGlaze);
 /* --------------- Update Shopping Cart --------------- */
 
 function cookies() {
-    if (typeof(Storage) !== "undefined") {
-        if (localStorage.clickcount) {
-            document.getElementById("nav-count").innerText = localStorage.clickcount;
-            if (document.getElementById("cart-count")) {
-            document.getElementById("cart-count").innerText = localStorage.clickcount;
-            }
-        }
-        else {
-            localStorage.clickcount = 0;
-            if (document.getElementById("cart-count")) {
-            document.getElementById("cart-count").innerText = localStorage.clickcount;
-            }
+    if (localStorage["itemInCart"]) {
+        itemInCart = JSON.parse(localStorage.getItem("itemInCart"));
+        var len = itemInCart.length;
+        if (len == 0) {
             emptyCartDisplay();
         }
+        document.getElementById("nav-count").innerText = len;
+        if (document.getElementById("cart-count")) {
+            document.getElementById("cart-count").innerText = len;
+        }
+    }
+    else {
+        var itemInCart = [];
+        var len = 0;
+        if (document.getElementById("cart-count")) {
+            document.getElementById("cart-count").innerText = len;
+        }
+        emptyCartDisplay();
+        localStorage["itemInCart"] = JSON.stringify(itemInCart);
     }
 }
 
@@ -158,27 +163,21 @@ var addToCartBtn = document.getElementById("add-to-cart");
 
 function updateCartQuantity() {
     if (quantitySelected && glazeSelected) {
-        if (typeof(Storage) !== "undefined") {
-            if (localStorage.clickcount) {
-                localStorage.clickcount = Number(localStorage.clickcount)+1;
-            }
-            else {
-            localStorage.clickcount = 1;
-            }
-        document.getElementById("nav-count").innerText = localStorage.clickcount;
-        }
         var itemTitle = event.target.parentElement.childNodes[1].innerText;
         itemTitle = itemTitle.toUpperCase();
         itemSelected.name = itemTitle;
         if (localStorage["itemInCart"]) {
             itemInCart = JSON.parse(localStorage.getItem("itemInCart"));
             itemInCart.push(itemSelected);
+            var len = itemInCart.length;
             localStorage["itemInCart"] = JSON.stringify(itemInCart);
         }
         else {
             var itemInCart = [];
+            var len = 0;
             localStorage["itemInCart"] = JSON.stringify(itemInCart);
         }
+        document.getElementById("nav-count").innerText = len;
     }
 }
 
@@ -214,7 +213,16 @@ function cartReady() {
         var button = cartGlaze[i];
         button.addEventListener('change', changeCartGlaze);
     }
-    document.getElementById("cart-count").innerText = localStorage.clickcount;
+    if (localStorage["itemInCart"]) {
+        itemInCart = JSON.parse(localStorage.getItem("itemInCart"));
+        var len = itemInCart.length;
+    }
+    else {
+        var itemInCart = [];
+        var len = 0;
+        localStorage["itemInCart"] = JSON.stringify(itemInCart);
+    }
+    document.getElementById("cart-count").innerText = len;
     calculateSubtotal();
 }
 
@@ -224,25 +232,36 @@ function removeCartItem(event) {
         if (document.getElementsByTagName("tr")[i] == buttonClicked.parentElement.parentElement) {
             itemInCart = JSON.parse(localStorage.getItem("itemInCart"));
             itemInCart.splice(i-1, 1);
+            var len = itemInCart.length;
             localStorage["itemInCart"] = JSON.stringify(itemInCart);
         }
     }
     buttonClicked.parentElement.parentElement.remove();
-    if (Number(localStorage.clickcount) > 0) {
-        localStorage.clickcount = Number(localStorage.clickcount)-1;
-    }
-    document.getElementById("nav-count").innerText = localStorage.clickcount;
-    document.getElementById("cart-count").innerText = localStorage.clickcount;
+    document.getElementById("nav-count").innerText = len;
+    document.getElementById("cart-count").innerText = len;
     calculateSubtotal();
     emptyCartDisplay();
 }
 
 function emptyCartDisplay() {
-    if (localStorage.clickcount == 0) {
+    if (localStorage["itemInCart"]) {
+        itemInCart = JSON.parse(localStorage.getItem("itemInCart"));
+        var len = itemInCart.length;
+        if (len == 0) {
+            var header = document.getElementById("table-header");
+            var emptyBag = document.getElementById("empty-bag");
+            header.style.display = "none";
+            emptyBag.style.display = "block"; 
+        }
+    }
+    else {
+        var itemInCart = [];
+        var len = 0;
         var header = document.getElementById("table-header");
         var emptyBag = document.getElementById("empty-bag");
         header.style.display = "none";
         emptyBag.style.display = "block"; 
+        localStorage["itemInCart"] = JSON.stringify(itemInCart);
     }
 }
 /* --------------- End of Delete An Item --------------- */
